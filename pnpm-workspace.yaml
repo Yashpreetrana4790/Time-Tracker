@@ -1,0 +1,12 @@
+packages:
+  - server
+  - desktop
+  - admin
+
+# pnpm blocks dependency install scripts by default; these need them.
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  prisma: true
+  esbuild: true
+  electron: true

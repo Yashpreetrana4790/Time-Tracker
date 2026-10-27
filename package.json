@@ -1,0 +1,16 @@
+{
+  "name": "time-tracker",
+  "private": true,
+  "scripts": {
+    "dev": "node init && concurrently -k -n server,admin,desktop -c blue,magenta,green \"pnpm --filter server dev\" \"pnpm --filter admin dev\" \"pnpm --filter desktop dev\"",
+    "dev:server": "node init && pnpm --filter server dev",
+    "dev:admin": "node init && pnpm --filter admin dev",
+    "dev:desktop": "node init && pnpm --filter desktop dev",
+    "db:reset": "pnpm --filter server db:reset"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^3.3.2"
+  }
+}

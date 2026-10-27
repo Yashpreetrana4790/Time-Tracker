@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enums, so enum-like fields are strings:
+//   User.role            ADMIN | EMPLOYEE
+//   WorkSession.closeReason  MANUAL | IDLE_TIMEOUT
+//   TimeSegment.type     WORK | BREAK | IDLE
+
+model User {
+  id            String              @id @default(cuid())
+  name          String
+  email         String              @unique
+  passwordHash  String
+  role          String              @default("EMPLOYEE")
+  assignments   ProjectAssignment[]
+  sessions      WorkSession[]
+  screenshots   Screenshot[]
+}
+
+model Project {
+  id          String              @id @default(cuid())
+  name        String
+  active      Boolean             @default(true)
+  assignments ProjectAssignment[]
+  segments    TimeSegment[]
+  screenshots Screenshot[]
+}
+
+model ProjectAssignment {
+  userId    String
+  projectId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([userId, projectId])
+}
+
+model WorkSession {
+  id            String        @id @default(cuid())
+  userId        String
+  clockIn       DateTime
+  clockOut      DateTime?
+  closeReason   String?
+  lastHeartbeat DateTime?
+  // Set once the employee has seen the "you were auto clocked out" notice.
+  noticeAcked   Boolean       @default(false)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  segments      TimeSegment[]
+  screenshots   Screenshot[]
+
+  @@index([userId, clockIn])
+}
+
+model TimeSegment {
+  id        String      @id @default(cuid())
+  sessionId String
+  type      String
+  projectId String?
+  start     DateTime
+  end       DateTime?
+  session   WorkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  project   Project?    @relation(fields: [projectId], references: [id])
+
+  @@index([sessionId, start])
+}
+
+model Screenshot {
+  id           String      @id @default(cuid())
+  userId       String
+  sessionId    String
+  projectId    String?
+  takenAt      DateTime
+  displayIndex Int         @default(0)
+  filePath     String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session      WorkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  project      Project?    @relation(fields: [projectId], references: [id])
+
+  @@index([userId, takenAt])
+}
+
+model Setting {
+  key   String @id
+  value String
+}

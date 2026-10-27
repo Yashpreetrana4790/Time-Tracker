@@ -1,0 +1,8 @@
+node_modules
+dist
+out
+*.db
+*.db-journal
+server/storage/screenshots/*
+!server/storage/screenshots/.gitkeep
+config.bat
